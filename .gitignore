@@ -1,0 +1,3 @@
+# remove backup files
+*.asv
+*.DS_Store
