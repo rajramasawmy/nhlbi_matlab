@@ -1,4 +1,4 @@
-function [img_s] = recon_cartesian(dfile,  nfile)
+function [img_s] = ex_recon_cartesian(dfile,  nfile)
 % function [data_struct] = recon_spiral(data_file,  noise_file)
 %
 % Simple spiral recon using MRD data format

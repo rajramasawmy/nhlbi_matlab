@@ -1,4 +1,4 @@
-function [img_s] = recon_spiral(dfile,  nfile)
+function [img_s] = ex_recon_spiral(dfile,  nfile)
 % function [data_struct] = recon_spiral(data_file,  noise_file)
 % 
 % Simple spiral recon using MRD data format 
@@ -114,16 +114,16 @@ if samples > length(k)
 else
     samples2 = samples;
 end
-trajectory_nominal = zeros(samples2,interleaves,2);
-gradients_nominal =  zeros(samples2,interleaves,2);
+trajectory = zeros(samples2,interleaves,2);
+gradients =  zeros(samples2,interleaves,2);
 
 neg = 1;
 for solid_int= 1:interleaves
     rot = (solid_int-1)*(2*pi/interleaves);
-    trajectory_nominal(:,solid_int,2) = neg*-( real(k(1:samples2)) *cos(rot) + imag(k(1:samples2)) *sin(rot));
-    trajectory_nominal(:,solid_int,1) = neg*-(-real(k(1:samples2)) *sin(rot) + imag(k(1:samples2)) *cos(rot));
-    gradients_nominal(:,solid_int,2)  = neg*-( real(g(1:samples2)) *cos(rot) + imag(g(1:samples2)) *sin(rot));
-    gradients_nominal(:,solid_int,1)  = neg*-(-real(g(1:samples2)) *sin(rot) + imag(g(1:samples2)) *cos(rot));
+    trajectory(:,solid_int,2) = neg*-( real(k(1:samples2)) *cos(rot) + imag(k(1:samples2)) *sin(rot));
+    trajectory(:,solid_int,1) = neg*-(-real(k(1:samples2)) *sin(rot) + imag(k(1:samples2)) *cos(rot));
+    gradients(:,solid_int,2)  = neg*-( real(g(1:samples2)) *cos(rot) + imag(g(1:samples2)) *sin(rot));
+    gradients(:,solid_int,1)  = neg*-(-real(g(1:samples2)) *sin(rot) + imag(g(1:samples2)) *cos(rot));
 end
 
 %% GIRF corrections
@@ -139,8 +139,8 @@ if ~(exist('apply_GIRF', 'file')==0)
     sR.R = R_pcs_gcs;
     sR.T = MRD_h.acquisitionSystemInformation.systemFieldStrength_T;
     
-    trajectory_nominal = apply_GIRF(gradients_nominal, dt, sR); 
-    trajectory_nominal = trajectory_nominal(:,:,1:2);
+    trajectory = apply_GIRF(gradients, dt, sR); 
+    trajectory = trajectory(:,:,1:2);
     
 end
 
@@ -173,15 +173,15 @@ end
 % ============================================
 
 % Assuming same encoding per image!
-omega = trajectory_nominal*(pi/max(max(max(trajectory_nominal))));
+omega = trajectory*(pi/max(max(max(trajectory))));
 omega = reshape(omega,interleaves*samples2,2);
 recon_st = nufft_init(omega, matrix_size, [6 6],matrix_size.*2, matrix_size./2);
 
 % ============================================
 % spiral-out weight estimation
 % ============================================
-traj_info.traj = trajectory_nominal;
-traj_info.grad = gradients_nominal;
+traj_info.traj = trajectory;
+traj_info.grad = gradients;
 recon_weights = nhlbi_utils.ismrm_calculate_weights(traj_info, 'Hoge');
 
 kspace = mean(kspace,4); % pseudo-rep will need to preceed this step
